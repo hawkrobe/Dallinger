@@ -21,6 +21,7 @@ from dallinger import experiment
 from dallinger import models
 from dallinger.config import get_config
 from dallinger import recruiters
+from dallinger.utils import generate_random_id
 from dallinger.notifications import get_messenger
 from dallinger.notifications import MessengerError
 
@@ -35,7 +36,6 @@ from .utils import (
     success_response,
     ExperimentError,
 )
-
 
 # Initialize the Dallinger database.
 session = db.session
@@ -378,22 +378,34 @@ def advertisement():
         These arguments will have appropriate values and we should enter the
         person in the database and provide a link to the experiment popup.
     """
+    recruiter_name = request.args.get("recruiter")
+    hit_id = request.args.get("hitId")
+    assignment_id = request.args.get("assignmentId")
+    worker_id = request.args.get("workerId")
+    app_id = config.get("id", "unknown")
+    mode = config.get("mode")
+    debug_mode = mode == "debug"
+    participant = None
+
+    if recruiter_name:
+        recruiter = recruiters.by_name(recruiter_name)
+    else:
+        recruiter = recruiters.from_config(config)
+        recruiter_name = recruiter.nickname
+
     if not ("hitId" in request.args and "assignmentId" in request.args):
-        raise ExperimentError("hit_assign_worker_id_not_set_in_mturk")
+        if recruiter_name == 'cli' :
+            hit_id = generate_random_id()
+            assignment_id = generate_random_id()
+            worker_id = generate_random_id()
+        else :
+            raise ExperimentError("hit_assign_worker_id_not_set_in_mturk")
     config = _config()
 
     # Browser rule validation, if configured:
     browser = ValidatesBrowser(config)
     if not browser.is_supported(request.user_agent.string):
         raise ExperimentError("browser_type_not_allowed")
-
-    hit_id = request.args["hitId"]
-    assignment_id = request.args["assignmentId"]
-    app_id = config.get("id", "unknown")
-    mode = config.get("mode")
-    debug_mode = mode == "debug"
-    worker_id = request.args.get("workerId")
-    participant = None
 
     if worker_id is not None:
         # First check if this workerId has completed the task before
@@ -420,13 +432,6 @@ def advertisement():
             )
         except exc.SQLAlchemyError:
             pass
-
-    recruiter_name = request.args.get("recruiter")
-    if recruiter_name:
-        recruiter = recruiters.by_name(recruiter_name)
-    else:
-        recruiter = recruiters.from_config(config)
-        recruiter_name = recruiter.nickname
 
     if should_show_thanks_page_to(participant):
         # They've either done, or they're from a recruiter that requires
