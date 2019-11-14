@@ -378,10 +378,9 @@ def advertisement():
         These arguments will have appropriate values and we should enter the
         person in the database and provide a link to the experiment popup.
     """
-    recruiter_name = request.args.get("recruiter")
-    hit_id = request.args.get("hitId")
-    assignment_id = request.args.get("assignmentId")
-    worker_id = request.args.get("workerId")
+
+    config = _config()
+    recruiter_name = request.args["recruiter"]
     app_id = config.get("id", "unknown")
     mode = config.get("mode")
     debug_mode = mode == "debug"
@@ -393,14 +392,21 @@ def advertisement():
         recruiter = recruiters.from_config(config)
         recruiter_name = recruiter.nickname
 
-    if not ("hitId" in request.args and "assignmentId" in request.args):
+    if ("hitId" in request.args and
+        "assignmentId" in request.args and
+        "workerId" in request.args):
+        assignment_id = request.args.get("assignmentId")
+        worker_id = request.args.get("workerId")
+        hit_id = request.args.get("hitId")
+    else :
+        # Auto-generate missing ids in cli recruitment mode, otherwise error
         if recruiter_name == 'cli' :
+            db.logger.debug('generating new ids')
             hit_id = generate_random_id()
             assignment_id = generate_random_id()
             worker_id = generate_random_id()
         else :
             raise ExperimentError("hit_assign_worker_id_not_set_in_mturk")
-    config = _config()
 
     # Browser rule validation, if configured:
     browser = ValidatesBrowser(config)
