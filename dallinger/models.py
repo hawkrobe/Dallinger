@@ -130,6 +130,7 @@ class Participant(Base, SharedMixin):
     #:    - ``submitted`` - participant has submitted their work
     #:    - ``approved`` - their work has been approved and they have been paid
     #:    - ``rejected`` - their work has been rejected
+    #:    - ``dropped`` - their connection dropped before finishing
     #:    - ``returned`` - they returned the hit before finishing
     #:    - ``abandoned`` - they ran out of time
     #:    - ``did_not_attend`` - the participant finished, but failed the
@@ -148,6 +149,7 @@ class Participant(Base, SharedMixin):
             "submitted",
             "approved",
             "rejected",
+            "dropped",
             "returned",
             "abandoned",
             "did_not_attend",
