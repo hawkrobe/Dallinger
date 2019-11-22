@@ -19,7 +19,7 @@ import json
 
 sockets = Sockets(app)
 
-HEARTBEAT_DELAY = 30
+HEARTBEAT_DELAY = 1
 
 
 def log(msg, level="info"):
@@ -148,7 +148,7 @@ class Client(object):
         """Send a single message to the websocket."""
         if isinstance(message, bytes):
             message = message.decode("utf8")
-
+        log("sending message: {}".format(message))
         with self.send_lock:
             try:
                 self.ws.send(message)
