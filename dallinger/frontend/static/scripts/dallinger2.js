@@ -570,8 +570,12 @@ var dallinger = (function () {
    */
   dlgr.waitForQuorum = function () {
     var ws_scheme = (window.location.protocol === "https:") ? 'wss://' : 'ws://';
-    var socket = new ReconnectingWebSocket(ws_scheme + location.host + "/chat?channel=quorum");
+    var socket = new ReconnectingWebSocket(ws_scheme + location.host + "/chat?channel=quorum",
+					   null, {automaticOpen : false});
     var deferred = $.Deferred();
+    socket.onopen = function (msg) {
+      socket.send({type : 'connect', participantid : dlgr.identity.participantId});
+    };
     socket.onmessage = function (msg) {
       if (msg.data.indexOf('quorum:') !== 0) { return; }
       var data = JSON.parse(msg.data.substring(7));
@@ -582,6 +586,7 @@ var dallinger = (function () {
         deferred.resolve();
       }
     };
+    socket.open();
     return deferred;
   };
 
