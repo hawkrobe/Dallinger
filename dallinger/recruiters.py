@@ -164,6 +164,16 @@ class CLIRecruiter(Recruiter):
 
         return urls
 
+    @property
+    def external_submission_url(self):
+        """On experiment completion, participants are returned to
+        the Mechanical Turk site to submit their HIT, which in turn triggers
+        notifications to the /notifications route.
+        """
+        if self.config.get("mode") == "sandbox":
+            return "https://workersandbox.mturk.com/mturk/externalSubmit"
+        return "https://www.mturk.com/mturk/externalSubmit"
+
     def close_recruitment(self):
         """Talk about closing recruitment."""
         logger.info(CLOSE_RECRUITMENT_LOG_PREFIX + " cli")
