@@ -201,6 +201,7 @@ var dallinger = (function () {
   dlgr.preventExit = false;
   window.addEventListener('beforeunload', function(e) {
     if (dlgr.preventExit && !dlgr.allowExitOnce) {
+      e.preventDefault();
       var returnValue = "Warning: the study is not yet finished. " +
         "Closing the window, refreshing the page or navigating elsewhere " +
         "might prevent you from finishing the experiment.";
