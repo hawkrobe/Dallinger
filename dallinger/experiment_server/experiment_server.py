@@ -357,7 +357,7 @@ def should_show_thanks_page_to(participant):
     status = participant.status
     marked_done = participant.end_time is not None
     ready_for_external_submission = (
-        status in ("overrecruited", "working") and marked_done
+        status in ("overrecruited", "dropped", "working") and marked_done
     )
     assignment_complete = status in ("submitted", "approved")
 
