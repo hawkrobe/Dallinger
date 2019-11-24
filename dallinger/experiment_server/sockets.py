@@ -19,7 +19,7 @@ import json
 
 sockets = Sockets(app)
 
-HEARTBEAT_DELAY = 1
+HEARTBEAT_DELAY = 10
 
 
 def log(msg, level="info"):
@@ -104,13 +104,17 @@ class ChatBackend(object):
     def unsubscribe(self, client, dropped=False):
         """Remove a client from all channels and call disconnect."""
         participant_id = client.participant_id
-        for channel_name, channel in self.channels.items():
-            channel.unsubscribe(client)
+        for channel_name in client.channels_subscribed_to:
+            self.channels[channel_name].unsubscribe(client)
 
-            # Tell other clients in network
+            # Tell other clients on this channel
             d = {"type": "disconnect", "participantid": participant_id}
             redis_conn.publish(channel_name, json.dumps(d))
-        log("participant {} disconnected".format(participant_id))
+            log(
+                "participant {} disconnected from channel {}".format(
+                    participant_id, channel_name
+                )
+            )
         gevent.sleep(0.001)
 
 
@@ -125,8 +129,9 @@ class Client(object):
         self.ws = ws
         self.lag_tolerance_secs = lag_tolerance_secs
         self.participant_id = ""
+        self.channels_subscribed_to = []
 
-        # This lock is used to make sure that multiple greenlets
+        # this lock is used to make sure that multiple greenlets
         # cannot send to the same socket concurrently.
         self.send_lock = Semaphore()
 
@@ -153,6 +158,7 @@ class Client(object):
 
     def subscribe(self, channel):
         """Start listening to messages on the specified channel."""
+        self.channels_subscribed_to.append(channel)
         chat_backend.subscribe(self, channel)
 
     def publish(self):
