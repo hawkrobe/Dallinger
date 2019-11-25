@@ -195,16 +195,6 @@ class HybridRecruiter(CLIRecruiter):
 
     def __init__(self):
         super(HybridRecruiter, self).__init__()
-        self.mturkservice = MTurkService(
-            aws_access_key_id=self.config.get("aws_access_key_id"),
-            aws_secret_access_key=self.config.get("aws_secret_access_key"),
-            region_name=self.config.get("aws_region"),
-            sandbox=self.config.get("mode") != "live",
-        )
-        self.mturkservice._create_notification_subscription(
-            experiment_id, notification_url, hit_type_id
-        )
-
         self.config = get_config()
 
     @property
@@ -216,25 +206,6 @@ class HybridRecruiter(CLIRecruiter):
         if self.config.get("mode") == "sandbox":
             return "https://workersandbox.mturk.com/mturk/externalSubmit"
         return "https://www.mturk.com/mturk/externalSubmit"
-
-    def reward_bonus(self, assignment_id, amount, reason):
-        """Reward the Turker for a specified assignment with a bonus."""
-        try:
-            return self.mturkservice.grant_bonus(assignment_id, amount, reason)
-        except MTurkServiceException as ex:
-            logger.exception(str(ex))
-
-    def approve_hit(self, assignment_id):
-        try:
-            return self.mturkservice.approve_assignment(assignment_id)
-        except MTurkServiceException as ex:
-            logger.exception(str(ex))
-
-    def submitted_event(self):
-        """MTurk will send its own notification when the worker
-        completes the HIT on that service.
-        """
-        return None
 
 
 class HotAirRecruiter(CLIRecruiter):
