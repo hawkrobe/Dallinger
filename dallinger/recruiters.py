@@ -201,6 +201,9 @@ class HybridRecruiter(CLIRecruiter):
             region_name=self.config.get("aws_region"),
             sandbox=self.config.get("mode") != "live",
         )
+        self.mturkservice._create_notification_subscription(
+            experiment_id, notification_url, hit_type_id
+        )
 
         self.config = get_config()
 
@@ -660,7 +663,7 @@ class MTurkRecruiter(Recruiter):
         If a HIT has already been submitted, it's too late to submit the
         questionnaire.
         """
-        if participant.status != "working":
+        if participant.status not in ["working", "dropped"]:
             return (
                 "This participant has already sumbitted their HIT "
                 "on MTurk and can no longer submit the questionnaire"
