@@ -227,6 +227,12 @@ class HybridRecruiter(CLIRecruiter):
         except MTurkServiceException as ex:
             logger.exception(str(ex))
 
+    def submitted_event(self):
+        """MTurk will send its own notification when the worker
+        completes the HIT on that service.
+        """
+        return None
+
 
 class HotAirRecruiter(CLIRecruiter):
     """A dummy recruiter: talks the talk, but does not walk the walk.
