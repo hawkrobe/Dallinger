@@ -210,6 +210,7 @@ class AssignmentSubmitted(WorkerEvent):
     min_real_bonus = 0.01
 
     def __call__(self):
+        self.log("handling assignment submitted")
         if not self.is_eligible(self.participant):
             return
 
@@ -242,7 +243,13 @@ class AssignmentSubmitted(WorkerEvent):
             self.experiment.recruiter.recruit(n=1)
 
     def is_eligible(self, particpant):
-        eligible_statuses = ("working", "overrecruited", "returned", "abandoned")
+        eligible_statuses = (
+            "working",
+            "overrecruited",
+            "returned",
+            "abandoned",
+            "dropped",
+        )
         return particpant.status in eligible_statuses
 
     def data_is_ok(self):

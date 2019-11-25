@@ -164,16 +164,6 @@ class CLIRecruiter(Recruiter):
 
         return urls
 
-    @property
-    def external_submission_url(self):
-        """On experiment completion, participants are returned to
-        the Mechanical Turk site to submit their HIT, which in turn triggers
-        notifications to the /notifications route.
-        """
-        if self.config.get("mode") == "sandbox":
-            return "https://workersandbox.mturk.com/mturk/externalSubmit"
-        return "https://www.mturk.com/mturk/externalSubmit"
-
     def close_recruitment(self):
         """Talk about closing recruitment."""
         logger.info(CLOSE_RECRUITMENT_LOG_PREFIX + " cli")
@@ -193,6 +183,29 @@ class CLIRecruiter(Recruiter):
 
     def _get_mode(self):
         return self.config.get("mode")
+
+
+class HybridRecruiter(CLIRecruiter):
+    """
+    A recruiter that allows you to manage HITs using another tool, but
+    still allows HIT to be submitted to mturk (and pay bonus) at the end
+    """
+
+    nickname = "hybrid"
+
+    def __init__(self):
+        super(HybridRecruiter, self).__init__()
+        self.config = get_config()
+
+    @property
+    def external_submission_url(self):
+        """On experiment completion, participants are returned to
+        the Mechanical Turk site to submit their HIT, which in turn triggers
+        notifications to the /notifications route.
+        """
+        if self.config.get("mode") == "sandbox":
+            return "https://workersandbox.mturk.com/mturk/externalSubmit"
+        return "https://www.mturk.com/mturk/externalSubmit"
 
 
 class HotAirRecruiter(CLIRecruiter):
